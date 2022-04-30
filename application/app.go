@@ -21,6 +21,6 @@ func StartApplication() {
 		WriteTimeout: 15 * time.Second,
 		ReadTimeout:  15 * time.Second,
 	}
-
+	log.Println("Application starting")
 	log.Fatal(srv.ListenAndServe())
 }

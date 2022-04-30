@@ -2,16 +2,14 @@ package utils
 
 import (
 	"errors"
-	"fmt"
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v4"
 	"net/http"
 	"strings"
-	"time"
 )
 
 type SignedDetails struct {
 	UserID int64
-	jwt.StandardClaims
+	jwt.RegisteredClaims
 }
 
 var secretKey = []byte("NOMORESAPA")
@@ -19,7 +17,6 @@ var secretKey = []byte("NOMORESAPA")
 func ValidateToken(request *http.Request) (claims *SignedDetails, msg string) {
 	extractedToken, extractErr := ExtractToken(request)
 	if extractErr != nil {
-		fmt.Println(extractErr)
 		return nil, ""
 	}
 	SignedToken := extractedToken
@@ -40,8 +37,8 @@ func ValidateToken(request *http.Request) (claims *SignedDetails, msg string) {
 		msg = err.Error()
 		return
 	}
-	if claims.ExpiresAt < time.Now().Local().Unix() {
-		msg = "token is expired"
+	if claimErr := claims.Valid(); claimErr != nil {
+		msg = "token is invalid"
 		msg = err.Error()
 		return
 	}

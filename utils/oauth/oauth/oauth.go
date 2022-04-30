@@ -2,16 +2,16 @@ package oauth
 
 import (
 	"errors"
-	"msitems/utils/ms_Error"
+	"fmt"
+	msErrors "msitems/utils/ms_Error"
 	"msitems/utils/oauth/utils"
+
 	"net/http"
 	"time"
 )
 
 const (
-	publicXHeader  = "X-Public"
-	headerClientId = "X-Client-Id"
-	headerCallerId = "X-Caller-Id"
+	publicXHeader = "X-Public"
 )
 
 type Oauthservice struct {
@@ -22,7 +22,7 @@ func (o *Oauthservice) Authenticate() *msErrors.RestErrors {
 	if o.request == nil {
 		return msErrors.NewBadRequest("Bad request", errors.New("check if request is empty"))
 	}
-	panic("implement me")
+	return nil
 }
 
 func NewOauth(request *http.Request) *Oauthservice {
@@ -31,8 +31,12 @@ func NewOauth(request *http.Request) *Oauthservice {
 
 func (o *Oauthservice) IsExpired() bool {
 	user := o.GetUserDetails()
-	if user.ExpiresAt > time.Now().Local().Unix() {
+	if user == nil {
+		fmt.Println("user is nil ")
 		return false
+	}
+	if user.VerifyExpiresAt(time.Now(), true) {
+		return true
 	}
 	return true
 }
@@ -51,8 +55,8 @@ func (o *Oauthservice) IsPrivate() bool {
 func (o *Oauthservice) GetUserDetails() *utils.SignedDetails {
 	user, msg := utils.ValidateToken(o.request)
 	if msg != "" {
+		fmt.Println("message is ", msg)
 		return nil
 	}
 	return user
-
 }
